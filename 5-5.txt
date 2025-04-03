@@ -1,0 +1,126 @@
+Declară că fiecare rând este blocat pe măsură ce este preluat, astfel încât alți utilizatori să nu poată modifica rândurile cât timp cursorul este deschis.
+
+Termen: FOR UPDATE
+
+Un cuvânt-cheie utilizat pentru a spune serverului Oracle să nu aștepte dacă rândurile solicitate au fost deja blocate de un alt utilizator.
+
+Termen: NOWAIT
+
+
+1.DECLARE
+  -- Declararea cursorului cu parametru pentru salariu
+  CURSOR eligible_employees_cur(p_salary_limit NUMBER) IS
+    SELECT employee_id, department_id, salary
+    FROM employees
+    WHERE salary < p_salary_limit
+    FOR UPDATE;
+
+  -- Variabile pentru stocarea datelor preluate
+  v_employee_id employees.employee_id%TYPE;
+  v_department_id employees.department_id%TYPE;
+  v_salary employees.salary%TYPE;
+BEGIN
+  -- Deschiderea cursorului
+  OPEN eligible_employees_cur(5000); -- Testarea cu limita de salariu 5000
+  
+  LOOP
+    -- Preluarea datelor din cursor
+    FETCH eligible_employees_cur INTO v_employee_id, v_department_id, v_salary;
+    EXIT WHEN eligible_employees_cur%NOTFOUND; -- Ieșirea din buclă când nu mai sunt rânduri
+    
+    -- Inserarea unui rând în tabelul PROPOSED_RAISES
+    INSERT INTO proposed_raises (
+      date_proposed,
+      date_approved,
+      employee_id,
+      department_id,
+      original_salary,
+      proposed_new_salary
+    )
+    VALUES (
+      SYSDATE,       -- Data propunerii
+      NULL,          -- Aprobat: NULL inițial
+      v_employee_id, -- ID-ul angajatului
+      v_department_id, -- ID-ul departamentului
+      v_salary,      -- Salariul actual
+      v_salary * 1.05 -- Salariul propus (5% mai mare)
+    );
+  END LOOP;
+
+  -- Închiderea cursorului
+  CLOSE eligible_employees_cur;
+END;
+/
+Cursorul eligible_employees_cur preia angajații ale căror salarii sunt mai mici decât limita dată (p_salary_limit). Acesta include instrucțiunea FOR UPDATE, blocând rândurile angajaților pentru a preveni modificările concurente.
+
+Folosim bucla LOOP pentru a prelua datele și a insera rânduri în tabelul PROPOSED_RAISES.
+
+Salariul propus este calculat ca fiind cu 5% mai mare decât salariul actual (v_salary * 1.05).
+
+Testarea se face utilizând limita de salariu de 5000.
+
+3.A
+DECLARE
+  CURSOR raises_cur IS
+    SELECT ROWID, date_proposed, date_approved
+    FROM proposed_raises
+    FOR UPDATE; -- Blocăm rândurile pentru a le actualiza
+
+  v_rowid ROWID;
+  v_date_proposed DATE;
+  v_date_approved DATE;
+BEGIN
+  OPEN raises_cur;
+
+  LOOP
+    FETCH raises_cur INTO v_rowid, v_date_proposed, v_date_approved;
+    EXIT WHEN raises_cur%NOTFOUND;
+
+    -- Actualizare folosind WHERE CURRENT OF
+    UPDATE proposed_raises
+    SET date_approved = SYSDATE
+    WHERE CURRENT OF raises_cur;
+  END LOOP;
+
+  CLOSE raises_cur;
+END;
+/
+
+-- SELECT pentru a vedea rezultatele
+SELECT * FROM proposed_raises;
+
+
+3.B
+DECLARE
+  CURSOR dept50_cur IS
+    SELECT ROWID
+    FROM proposed_raises
+    WHERE department_id = 50
+    FOR UPDATE; -- Blocăm rândurile pentru a le șterge
+
+  v_rowid ROWID;
+BEGIN
+  OPEN dept50_cur;
+
+  LOOP
+    FETCH dept50_cur INTO v_rowid;
+    EXIT WHEN dept50_cur%NOTFOUND;
+
+    -- Ștergere folosind WHERE CURRENT OF
+    DELETE FROM proposed_raises
+    WHERE CURRENT OF dept50_cur;
+  END LOOP;
+
+  CLOSE dept50_cur;
+END;
+/
+
+-- SELECT pentru a verifica dacă ștergerile au fost efectuate
+SELECT * FROM proposed_raises;
+
+Blocul 3.A: Actualizează fiecare rând din tabelul PROPOSED_RAISES, setând date_approved la data de astăzi (SYSDATE) pentru toate rândurile.
+
+Blocul 3.B: Șterge toate rândurile asociate cu departamentul 50 folosind un cursor cu FOR UPDATE și sintaxa WHERE CURRENT OF.
+
+Testare: Rularea fiecărui bloc include verificarea rezultatelor folosind comenzi SELECT.
+

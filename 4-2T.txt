@@ -1,0 +1,57 @@
+3.A. PL/SQL Block
+Mai jos este un exemplu de bloc PL/SQL care îndeplinește cerințele de mai sus utilizând o expresie CASE:
+
+sql
+DECLARE
+    v_currency_name countries.currency_name%TYPE := '<currency name>'; -- Înlocuiește cu numele valutei dorite (US Dollar, Swiss franc, Euro)
+    v_country_count NUMBER;
+    v_message VARCHAR2(50);
+BEGIN
+    -- Obține numărul de țări care utilizează moneda furnizată
+    SELECT COUNT(*) INTO v_country_count
+    FROM countries
+    WHERE currency_name = v_currency_name;
+
+    -- Determină mesajul utilizând expresia CASE
+    v_message :=
+    CASE
+        WHEN v_country_count > 20 THEN 'More than 20 countries'
+        WHEN v_country_count BETWEEN 10 AND 20 THEN 'Between 10 and 20 countries'
+        WHEN v_country_count < 10 THEN 'Fewer than 10 countries'
+        ELSE 'No data available'
+    END;
+
+    -- Afișează mesajul
+    DBMS_OUTPUT.PUT_LINE('Currency ' || v_currency_name || ' is used in ' || v_message);
+END;
+Explicații:
+Declarare variabile:
+
+v_currency_name: Reține numele valutei furnizate.
+
+v_country_count: Reține numărul de țări care utilizează moneda furnizată.
+
+v_message: Reține mesajul descriptiv bazat pe numărul de țări.
+
+SELECT COUNT() INTO:*
+
+Interogarea returnează numărul de țări care utilizează moneda.
+
+Expresia CASE:
+
+Clasifică mesajul pe baza valorii numărului de țări.
+
+DBMS_OUTPUT.PUT_LINE:
+
+Afișează rezultatul final.
+
+B. Testare cod:
+Pentru fiecare valută, înlocuiește <currency name> din declarația v_currency_name cu numele valutei respective și execută codul.
+
+Rezultate așteptate:
+
+US Dollar: More than 20 countries
+
+Swiss franc: Fewer than 10 countries
+
+Euro: Between 10 and 20 countries

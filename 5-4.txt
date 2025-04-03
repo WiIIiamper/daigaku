@@ -1,0 +1,112 @@
+2.DECLARE
+  -- Declararea cursorului
+  CURSOR country_cursor(p_region_id NUMBER) IS
+    SELECT country_name, area
+    FROM countries
+    WHERE region_id = p_region_id;
+  
+  -- Variabile pentru stocarea datelor
+  v_country_name countries.country_name%TYPE;
+  v_area countries.area%TYPE;
+BEGIN
+  -- Deschiderea cursorului
+  OPEN country_cursor(5); -- Testarea cu region_id = 5
+  LOOP
+    FETCH country_cursor INTO v_country_name, v_area;
+    EXIT WHEN country_cursor%NOTFOUND; -- Ieșirea din buclă când nu mai sunt rânduri
+    DBMS_OUTPUT.PUT_LINE(v_country_name || ' ' || v_area);
+  END LOOP;
+  CLOSE country_cursor;
+
+  -- Deschiderea cursorului din nou pentru region_id = 30
+  OPEN country_cursor(30);
+  LOOP
+    FETCH country_cursor INTO v_country_name, v_area;
+    EXIT WHEN country_cursor%NOTFOUND;
+    DBMS_OUTPUT.PUT_LINE(v_country_name || ' ' || v_area);
+  END LOOP;
+  CLOSE country_cursor;
+END;
+/
+
+
+3.DECLARE
+  -- Declararea cursorului
+  CURSOR country_cursor(p_region_id NUMBER) IS
+    SELECT country_name, area
+    FROM countries
+    WHERE region_id = p_region_id;
+BEGIN
+  -- Buclă FOR pentru region_id = 5
+  FOR country_record IN country_cursor(5) LOOP
+    DBMS_OUTPUT.PUT_LINE(country_record.country_name || ' ' || country_record.area);
+  END LOOP;
+
+  -- Buclă FOR pentru region_id = 30
+  FOR country_record IN country_cursor(30) LOOP
+    DBMS_OUTPUT.PUT_LINE(country_record.country_name || ' ' || country_record.area);
+  END LOOP;
+END;
+/
+
+
+
+
+
+4.DECLARE
+  -- Declararea cursorului
+  CURSOR country_cursor(p_region_id NUMBER, p_min_area NUMBER) IS
+    SELECT country_name, area
+    FROM countries
+    WHERE region_id = p_region_id AND area > p_min_area;
+BEGIN
+  -- Testare cu parametrii (5, 200000)
+  DBMS_OUTPUT.PUT_LINE('Regiune: 5 Aria minimă: 200000');
+  FOR country_record IN country_cursor(5, 200000) LOOP
+    DBMS_OUTPUT.PUT_LINE(country_record.country_name || ' ' || country_record.area);
+  END LOOP;
+
+  -- Testare cu parametrii (5, 1000000)
+  DBMS_OUTPUT.PUT_LINE('Regiune: 5 Aria minimă: 1000000');
+  FOR country_record IN country_cursor(5, 1000000) LOOP
+    DBMS_OUTPUT.PUT_LINE(country_record.country_name || ' ' || country_record.area);
+  END LOOP;
+END;
+/
+
+5.DECLARE
+  -- Declararea cursorului
+  CURSOR country_cursor(p_region_id NUMBER, p_min_area NUMBER) IS
+    SELECT country_name, area
+    FROM countries
+    WHERE region_id = p_region_id AND area > p_min_area;
+  
+  -- Variabile pentru deschiderea și închiderea cursorului
+  v_region_id NUMBER;
+  v_min_area NUMBER;
+BEGIN
+  -- Prima execuție (5, 200000)
+  v_region_id := 5;
+  v_min_area := 200000;
+  DBMS_OUTPUT.PUT_LINE('Regiune: ' || v_region_id || ' Aria minimă: ' || v_min_area);
+  OPEN country_cursor(v_region_id, v_min_area);
+  LOOP
+    FETCH country_cursor INTO v_region_id, v_min_area;
+    EXIT WHEN country_cursor%NOTFOUND;
+    DBMS_OUTPUT.PUT_LINE(country_record.country_name || ' ' || country_record.area);
+  END LOOP;
+  CLOSE country_cursor;
+
+  -- A doua execuție (30, 500000)
+  v_region_id := 30;
+  v_min_area := 500000;
+  DBMS_OUTPUT.PUT_LINE('Regiune: ' || v_region_id || ' Aria minimă: ' || v_min_area);
+  OPEN country_cursor(v_region_id, v_min_area);
+  LOOP
+    FETCH country_cursor INTO v_region_id, v_min_area;
+    EXIT WHEN country_cursor%NOTFOUND;
+    DBMS_OUTPUT.PUT_LINE(country_record.country_name || ' ' || country_record.area);
+  END LOOP;
+  CLOSE country_cursor;
+END;
+/

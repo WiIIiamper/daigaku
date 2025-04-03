@@ -1,0 +1,87 @@
+### **Soluția pentru cerința 4 – utilizând IF și EXIT în buclă**  
+Acest cod PL/SQL utilizează o **buclă de bază (LOOP)** și o variabilă incrementată pentru a extrage și afișa primele 3 țări din tabelul `COUNTRIES`. Se folosește **IF și EXIT** pentru a opri bucla după 3 iterații.  
+
+```plsql
+DECLARE
+    v_country_id   COUNTRIES.country_id%TYPE;
+    v_country_name COUNTRIES.country_name%TYPE;
+    v_counter      NUMBER := 1; -- Variabila pentru numărarea iterațiilor
+BEGIN
+    LOOP
+        -- Selectează country_id și country_name pentru ID-ul curent
+        SELECT country_id, country_name
+        INTO v_country_id, v_country_name
+        FROM COUNTRIES
+        WHERE country_id = v_counter;
+
+        -- Afișează rezultatele
+        DBMS_OUTPUT.PUT_LINE('ID Țară: ' || v_country_id || ', Nume Țară: ' || v_country_name);
+
+        -- Creștem contorul
+        v_counter := v_counter + 1;
+
+        -- Ieșim din buclă după ce am afișat 3 țări
+        IF v_counter > 3 THEN
+            EXIT;
+        END IF;
+    END LOOP;
+END;
+/
+```
+
+### **Explicație:**
+1. Se declară variabile pentru `country_id`, `country_name` și un **contor** (`v_counter`), care începe de la **1**.
+2. Se folosește o **buclă LOOP** pentru a prelua datele din tabel pe baza `country_id`.
+3. **`SELECT INTO`** extrage datele pentru `country_id = v_counter`.
+4. Se afișează `ID Țară` și `Nume Țară` utilizând `DBMS_OUTPUT.PUT_LINE`.
+5. `v_counter` este **incrementat** cu 1 după fiecare iterație.
+6. Se folosește **IF și EXIT** pentru a opri bucla după 3 iterații (`v_counter > 3`).
+
+---
+
+### **Soluția pentru cerința 5 – utilizând `EXIT WHEN` în loc de `IF și EXIT`**  
+În această versiune, înlocuim **IF și EXIT** cu **`EXIT WHEN`**, care are același efect, dar este mai concis.  
+
+```plsql
+DECLARE
+    v_country_id   COUNTRIES.country_id%TYPE;
+    v_country_name COUNTRIES.country_name%TYPE;
+    v_counter      NUMBER := 1; -- Variabila pentru numărarea iterațiilor
+BEGIN
+    LOOP
+        -- Ieșim din buclă după ce am afișat primele 3 țări
+        EXIT WHEN v_counter > 3;
+
+        -- Selectează country_id și country_name pentru ID-ul curent
+        SELECT country_id, country_name
+        INTO v_country_id, v_country_name
+        FROM COUNTRIES
+        WHERE country_id = v_counter;
+
+        -- Afișează rezultatele
+        DBMS_OUTPUT.PUT_LINE('ID Țară: ' || v_country_id || ', Nume Țară: ' || v_country_name);
+
+        -- Creștem contorul
+        v_counter := v_counter + 1;
+    END LOOP;
+END;
+/
+```
+
+### **Explicație pentru această versiune:**
+1. **`EXIT WHEN v_counter > 3;`** este plasat **la începutul buclei** și înlocuiește `IF` + `EXIT`.
+2. Bucla **se oprește automat** când `v_counter` depășește **3**, fără a mai fi nevoie de o verificare `IF`.
+3. Restul logicii este identic cu prima soluție.
+
+---
+
+### **Care soluție este mai bună?**
+- **Varianta cu `EXIT WHEN` (cerința 5)** este **mai clară și mai concisă**, deoarece evită verificarea `IF`.
+- Ambele soluții returnează **aceleași rezultate** și funcționează corect.
+6.
+Explicația codului:
+Ștergem și recreăm tabelul MESSAGES pentru a evita erorile.
+Inserăm numerele de la 1 la 10 cu o buclă FOR.
+Excludem numerele 6 și 8 cu o instrucțiune IF.
+Facem COMMIT pentru a salva datele în baza de date.
+Executăm un SELECT * FROM messages; pentru a verifica rezultatul.

@@ -1,0 +1,89 @@
+4.
+-- A. Declare a cursor to read and display all rows from the CURRENCIES table
+DECLARE
+    CURSOR currencies_cur IS
+        SELECT currency_code, currency_name
+        FROM CURRENCIES
+        ORDER BY currency_name;
+    -- B. Declare variables to store fetched values
+    v_currency_code CURRENCIES.currency_code%TYPE;
+    v_currency_name CURRENCIES.currency_name%TYPE;
+BEGIN
+    -- C. Open the cursor
+    OPEN currencies_cur; 
+    -- D. Fetch and display one row
+    FETCH currencies_cur INTO v_currency_code, v_currency_name;
+    DBMS_OUTPUT.PUT_LINE(v_currency_code || ' ' || v_currency_name);
+    -- Close the cursor
+    CLOSE currencies_cur;
+END;
+-- E. Modify code to fetch and display all rows using a loop
+DECLARE
+    CURSOR currencies_cur IS
+        SELECT currency_code, currency_name
+        FROM CURRENCIES
+        ORDER BY currency_name;
+    v_currency_code CURRENCIES.currency_code%TYPE;
+    v_currency_name CURRENCIES.currency_name%TYPE;
+BEGIN
+    OPEN currencies_cur;
+    LOOP
+        FETCH currencies_cur INTO v_currency_code, v_currency_name;
+        EXIT WHEN currencies_cur%NOTFOUND;
+        DBMS_OUTPUT.PUT_LINE(v_currency_code || ' ' || v_currency_name);
+    END LOOP
+    CLOSE currencies_cur;
+END;
+/
+-- G. Read and display all rows in the COUNTRIES table for region 5 (South America)
+DECLARE
+    CURSOR countries_cur IS
+        SELECT country_name, national_holiday_date, national_holiday_name
+        FROM COUNTRIES
+        WHERE region_id = 5 AND national_holiday_date IS NOT NULL;
+    v_country_name COUNTRIES.country_name%TYPE;
+    v_national_holiday_date COUNTRIES.national_holiday_date%TYPE;
+    v_national_holiday_name COUNTRIES.national_holiday_name%TYPE;
+BEGIN
+    OPEN countries_cur;
+    
+    LOOP
+        FETCH countries_cur INTO v_country_name, v_national_holiday_date, v_national_holiday_name;
+        EXIT WHEN countries_cur%NOTFOUND;
+        DBMS_OUTPUT.PUT_LINE(v_country_name || ' ' || TO_CHAR(v_national_holiday_date, 'DD-MON-YYYY') || ' ' || v_national_holiday_name);
+    END LOOP;
+    CLOSE countries_cur;
+END;
+/
+
+5.
+Declararea cursorului: Un cursor explicit trebuie mai întâi declarat în secțiunea DECLARE utilizând CURSOR cursor_name IS urmat de o interogare SQL.
+
+Deschiderea cursorului: În secțiunea BEGIN, cursorul trebuie deschis cu OPEN cursor_name; înainte de a putea prelua date.
+
+Închiderea cursorului: După utilizare, cursorul trebuie închis cu CLOSE cursor_name; pentru a elibera resursele utilizate.
+
+6. Bloc PL/SQL pentru a afișa regiunile cu cel puțin 10 țări
+DECLARE
+    CURSOR regions_cur IS
+        SELECT r.region_name, COUNT(c.country_id) AS country_count
+        FROM REGIONS r
+        JOIN COUNTRIES c ON r.region_id = c.region_id
+        GROUP BY r.region_name
+        HAVING COUNT(c.country_id) >= 10
+        ORDER BY r.region_name;
+    
+    v_region_name REGIONS.region_name%TYPE;
+    v_country_count NUMBER;
+BEGIN
+    OPEN regions_cur;
+    
+    LOOP
+        FETCH regions_cur INTO v_region_name, v_country_count;
+        EXIT WHEN regions_cur%NOTFOUND;
+        DBMS_OUTPUT.PUT_LINE(v_region_name || ': ' || v_country_count || ' țări');
+    END LOOP;
+    
+    CLOSE regions_cur;
+END;
+/
